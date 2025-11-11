@@ -6,6 +6,7 @@ Console.Title = "Maze Game";
         // Step 1: Display intro
         Console.WriteLine("Welcome to the Maze Game!");
         Console.WriteLine("Use the arrow keys to move. Find the '*' to win.");
+        Console.WriteLine("Collect 10 '^' to unlock the door '|'. Avoid the enemies '%'.");
         Console.WriteLine("Press any key to start...");
         Console.ReadKey(true);
 
@@ -19,6 +20,7 @@ Console.Title = "Maze Game";
             Console.WriteLine(row);
         }
         
+        DateTime startTime = DateTime.Now;
        
         // enemy positions
         List<(int row, int col)> enemies = new List<(int row, int col)>();
@@ -58,6 +60,7 @@ Console.Title = "Maze Game";
         
         // variables
         int charCollected = 0;
+        int score = 0;
         Random rand = new Random();
         
 
@@ -90,7 +93,7 @@ Console.Title = "Maze Game";
                     break;
             }
     // Step 4: Try moving
-    TryMove(proposedTop, proposedLeft, ref charCollected, mazeRows, ref cursorTop, ref cursorLeft);
+    TryMove(proposedTop, proposedLeft, ref charCollected, ref score, mazeRows, ref cursorTop, ref cursorLeft);
 
     // Enemy movement
     EnemyMove(ref running, cursorTop, cursorLeft, mazeRows, enemies, enemyDirections, enemySteps);
@@ -99,18 +102,24 @@ Console.Title = "Maze Game";
             // Step 5: Check for win condition
             if (mazeRows[cursorTop][cursorLeft] == '#')
             {
+                TimeSpan totalTime = DateTime.Now - startTime;
                 Console.Clear();
-                Console.WriteLine(" yay you won! ");
-                Console.WriteLine("Press any key to exit...");
+                Console.WriteLine(" Yay you won! ");
+                Console.WriteLine($" Score: {score} ");
+                Console.WriteLine($" Time Taken: {totalTime.Minutes:D2}:{totalTime.Seconds:D2}");
+                Console.WriteLine(" Press any key to exit...");
                 Console.ReadKey(true);
                 break;
             }
 
-           
+           Console.SetCursorPosition(0, mazeRows.Length + 1);
+           Console.Write($"Score: {score}   Keys Collected: {charCollected}/10 ");
+           Console.SetCursorPosition(cursorLeft, cursorTop);
+
         } while (running);
 
     // Step 4: TryMove method
-    static void TryMove(int proposedTop, int proposedLeft,  ref int charCollected, string[] mazeRows, ref int cursorTop, ref int cursorLeft)
+    static void TryMove(int proposedTop, int proposedLeft,  ref int charCollected, ref int score,string[] mazeRows, ref int cursorTop, ref int cursorLeft)
 {
     // Check bounds
     if (proposedTop < 0 || proposedTop >= mazeRows.Length)
@@ -142,6 +151,22 @@ Console.Title = "Maze Game";
         Console.SetCursorPosition(cursorLeft, cursorTop);
 
         charCollected++;
+        score += 100;
+    }
+     
+     if (nextChar == '$')
+    {
+        var rowChars = mazeRows[proposedTop].ToCharArray();
+        rowChars[proposedLeft] = ' ';
+        mazeRows[proposedTop] = new string(rowChars);
+
+        // Visually remove it
+        Console.SetCursorPosition(proposedLeft, proposedTop);
+        Console.Write(' ');
+        Console.SetCursorPosition(cursorLeft, cursorTop);
+
+        
+        score += 200;
     }
 
     // opens door
